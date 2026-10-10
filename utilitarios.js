@@ -33,3 +33,15 @@ function recuperaraTexto(idComponente){
         componente.src = rutaImagen;
     
     }
+    function mostrarHTML(id, contenido) {
+    document.getElementById(id).innerHTML = contenido;
+}
+
+    function escaparHTML(valor) {
+    return String(valor)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+}
