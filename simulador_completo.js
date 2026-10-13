@@ -8,6 +8,7 @@
   let montoCalculado = 0;
   let plazoCalculado = 0;
   let creditoAprobado = false;
+  let clienteCredito = null;
 
   
 //Para recuperar o mostrar información usar los métodos de la clase utilitarios, puede agregar métodos adicionales en utilitarios
@@ -150,4 +151,156 @@ function limpiar() {
     clienteSeleccionado = null;
     document.getElementById("Cedula").disabled = false;
     mostrarTexto("mensajeCliente", "");
+}
+
+function buscarClienteCredito() {
+    let cedula = recuperaraTexto("buscarCedulaCredito").trim();
+    clienteCredito = buscarCliente(cedula);
+
+    mostrarTexto("resultadoCredito", "");
+    document.getElementById("resultadoCredito").className = "";
+    document.getElementById("btnSolicitarCredito").disabled = true;
+    creditoAprobado = false;
+
+    if (clienteCredito === null) {
+        mostrarTexto("datosClienteCredito", "Cliente no encontrado.");
+        return;
+    }
+
+    let contenido =
+        "<h3>Datos del Cliente</h3>" +
+        "<p><strong>Cédula:</strong> " +
+        escaparHTML(clienteCredito.cedula) + "</p>" +
+        "<p><strong>Nombre:</strong> " +
+        escaparHTML(clienteCredito.nombre) + "</p>" +
+        "<p><strong>Apellido:</strong> " +
+        escaparHTML(clienteCredito.apellido) + "</p>" +
+        "<p><strong>Ingresos:</strong> $" +
+        clienteCredito.ingresos + "</p>" +
+        "<p><strong>Egresos:</strong> $" +
+        clienteCredito.egresos + "</p>";
+
+    mostrarHTML("datosClienteCredito", contenido);
+}
+
+function buscarClienteCredito() {
+    
+    let cedula = recuperaraTexto("buscarCedulaCredito").trim();
+    document.getElementById("btnSolicitarCredito").disabled = true;
+
+    clienteSeleccionado = buscarCliente(cedula);
+
+    mostrarHTML("resultadoCredito", "");
+    document.getElementById("resultadoCredito").className = "";
+    creditoAprobado = false;
+
+    if (clienteSeleccionado === null) {
+        mostrarTexto("datosClienteCredito", "Cliente no encontrado.");
+        return;
+    }
+
+    let contenido = `
+        <h3>Datos del Cliente</h3>
+        <p><strong>Cédula:</strong>
+            ${escaparHTML(clienteSeleccionado.cedula)}</p>
+        <p><strong>Nombre:</strong>
+            ${escaparHTML(clienteSeleccionado.nombre)}</p>
+        <p><strong>Apellido:</strong>
+            ${escaparHTML(clienteSeleccionado.apellido)}</p>
+        <p><strong>Ingresos:</strong>
+            ${clienteSeleccionado.ingresos}</p>
+        <p><strong>Egresos:</strong>
+            ${clienteSeleccionado.egresos}</p>
+    `;
+
+    mostrarHTML("datosClienteCredito", contenido);
+}
+
+function calcularDisponible(ingresos, egresos) {
+    let disponible = ingresos - egresos;
+
+    if (disponible < 0) {
+        return 0;
+    }
+
+    return disponible;
+}
+
+function calcularCapacidadPago(montoDisponible) {
+    return montoDisponible * 0.5;
+}
+
+function calcularInteresSimple(monto, tasa, plazoAnios) {
+    return monto * (tasa / 100) * plazoAnios;
+}
+
+function calcularCuotaMensual(total, plazoAnios) {
+    return total / (plazoAnios * 12);
+}
+
+function calcularCredito() {
+    let resultadoCredito = document.getElementById("resultadoCredito");
+    document.getElementById("btnSolicitarCredito").disabled = true;
+
+    resultadoCredito.className = "";
+    creditoAprobado = false;
+
+    if (clienteSeleccionado === null) {
+        mostrarTexto("resultadoCredito", "Primero buscar un cliente.");
+        return;
+    }
+
+    let monto = recuperarFloat("montoCredito");
+    let plazoAnios = recuperarFloat("plazoCredito");
+
+    if (!Number.isFinite(monto) || monto <= 0 ||
+        !Number.isFinite(plazoAnios) || plazoAnios <= 0) {
+        mostrarTexto(
+            "resultadoCredito",
+            "Ingresar un monto y un plazo mayores que cero. Plazo en años."
+        );
+        return;
+    }
+
+    let ingresos = Number(clienteSeleccionado.ingresos);
+    let egresos = Number(clienteSeleccionado.egresos);
+
+    if (!Number.isFinite(ingresos) || ingresos < 0 ||
+        !Number.isFinite(egresos) || egresos < 0) {
+        mostrarTexto(
+            "resultadoCredito",
+            "Revisar los ingresos y egresos del cliente."
+        );
+        return;
+    }
+
+    let disponible = calcularDisponible(ingresos, egresos);
+    let capacidadPago = calcularCapacidadPago(disponible);
+
+    let interes = calcularInteresSimple(monto, tasaInteres, plazoAnios);
+    let totalPagar = monto + interes;
+
+    cuotaCalculada = calcularCuotaMensual(totalPagar, plazoAnios);
+    montoCalculado = monto;
+    plazoCalculado = plazoAnios;
+
+    creditoAprobado = cuotaCalculada <= capacidadPago;
+    document.getElementById("btnSolicitarCredito").disabled = !creditoAprobado;
+
+    let resultado;
+
+    if (creditoAprobado) {
+        resultado = "APROBADO";
+        resultadoCredito.className = "aprobado";
+    } else {
+        resultado = "RECHAZADO";
+        resultadoCredito.className = "rechazado";
+    }
+
+    resultadoCredito.innerHTML = `
+        Capacidad de pago: ${capacidadPago.toFixed(2)}<br>
+        Total a pagar: ${totalPagar.toFixed(2)}<br>
+        Cuota mensual: ${cuotaCalculada.toFixed(2)}<br>
+        RESULTADO: ${resultado}
+    `;
 }
