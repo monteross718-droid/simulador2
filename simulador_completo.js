@@ -27,6 +27,8 @@
 
  }
 
+ 
+
  mostrarSeccion = function (id){
     ocultarSecciones();
     document.getElementById(id).classList.add("activa");
@@ -38,6 +40,7 @@
 
     if (tasa >= 10 && tasa <= 20) {
       tasaInteres = tasa;
+    
      document.getElementById("mensajeTasa").innerText =
         "Tasa configurada correctamente: " + tasaInteres + "%";
     } else {
@@ -52,6 +55,8 @@
         }
     }
     return null;
+
+
     }
 
 function guardarCliente() {
