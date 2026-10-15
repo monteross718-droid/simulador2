@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sistema de Créditos</title>
+</head>
+<body>
+
+<header>
+  <h1>Sistema Básico de Créditos</h1>
+   <link rel="stylesheet" href="simulador_completo.css">
+</header>
+
+<nav>
+  <button onclick="mostrarSeccion('parametros')">Parámetros</button>
+  <button onclick="mostrarSeccion('clientes')">Clientes</button>
+  <button onclick="mostrarSeccion('creditos')" >Créditos</button>
+  <button onclick="mostrarSeccion('listaCreditos'); pintarCreditos(creditos);">Créditos Registrados</button>
+</nav>
+
+<section id="parametros">
+  <h2>Configurar Parámetros</h2>
+
+  <label>Tasa de interés:</label>
+  <input type="number" min="10" max="20" value="15" id="tasaInteres">
+  <span>%</span>
+
+  <br>
+  <button onclick="guardarTasa();">Guardar tasa</button>
+
+  <p id="mensajeTasa"></p>
+</section>
+
+<section id="clientes">
+  <h2>Registro de Clientes</h2>
+
+  <input type="text" id="Cedula" placeholder="Ingrese Cedula">
+  <input type="text" id="Nombre" placeholder="Ingrese Nombre">
+  <input type="text" id="Apellido" placeholder="Ingrese Apellido" >
+  <input type="number" id="Ingresos" placeholder="Ingresos" >
+  <input type="number" id="Egresos" placeholder="Egresos">
+
+  <br>
+
+
+  <button onclick="guardarCliente();">Guardar cliente</button>
+  <button onclick="limpiar();">Limpiar</button>
+  <p id="mensajeCliente"></p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Cédula</th>
+        <th>Nombre</th>
+        <th>Apellido</th>
+        <th>Ingresos</th>
+        <th>Egresos</th>
+        <th>Acciones</th>
+        
+      </tr>
+    </thead>
+    <tbody id="tablaClientes"></tbody>
+  </table>
+</section>
+<section id="creditos">
+  <h2>Solicitar Crédito</h2>
+
+  <label for="buscarCedulaCredito">Cédula del cliente:</label>
+  <input type="text" id="buscarCedulaCredito">
+  <button onclick="buscarClienteCredito()">Buscar cliente</button>
+
+  <div id="datosClienteCredito" class="card"></div>
+
+  <label for="montoCredito">Monto ($):</label>
+  <input type="number" id="montoCredito" min="0.01" step="0.01">
+  <label for="plazoCredito">Plazo (años):</label>
+  <input type="number" id="plazoCredito" min="1" step="1">
+
+  <br>
+
+  <button onclick="calcularCredito()">Calcular crédito</button>
+
+  <div id="resultadoCredito"></div>
+
+  <button id="btnSolicitarCredito" onclick="solicitarCredito()" disabled>
+    Asignar Crédito
+  </button>
+  <p id="mensajeAsignacion" aria-live="polite"></p>
+</section>
+
+<section id="listaCreditos">
+  <h2>Créditos Registrados</h2>
+
+  <label for="buscarCedulaListado">Cédula del cliente:</label>
+  <input type="text" id="buscarCedulaListado" placeholder="Ingrese la cédula">
+  <p id="mensajeHistorial" aria-live="polite"></p>
+  <button onclick="buscarCreditosCliente()">Buscar</button>
+  <button onclick="pintarCreditos(creditos)">Ver todos</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Cédula</th>
+        <th>Nombre</th>
+        <th>Apellido</th>
+        <th>Monto</th>
+        <th>Tasa</th>
+        <th>Plazo</th>
+        <th>Cuota</th>
+      </tr>
+    </thead>
+    <tbody id="tablaCreditos"></tbody>
+  </table>
+</section>
+
+<script src="utilitarios.js"></script>
+<script src="simulador_completo.js"></script>
+</body>
+</html>
