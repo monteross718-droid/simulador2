@@ -68,19 +68,23 @@
 
   <label for="buscarCedulaCredito">Cédula del cliente:</label>
   <input type="text" id="buscarCedulaCredito">
+  <p class="error-campo" id="error_buscarCedulaCredito" aria-live="polite"></p>
   <button onclick="buscarClienteCredito()">Buscar cliente</button>
 
   <div id="datosClienteCredito" class="card"></div>
 
   <label for="montoCredito">Monto ($):</label>
-  <input type="number" id="montoCredito" min="0.01" step="0.01">
+  <input type="number" id="montoCredito" max="100000" min="0.01" step="0.01">
+  <p class="error-campo" id="error_montoCredito" aria-live="polite"></p>
   <label for="plazoCredito">Plazo (años):</label>
-  <input type="number" id="plazoCredito" min="1" step="1">
+  <input type="number" id="plazoCredito" max="30" min="1" step="1">
+  <p class="error-campo" id="error_plazoCredito" aria-live="polite"></p>
 
   <br>
 
-  <button onclick="calcularCredito()">Calcular crédito</button>
+  <button onclick="calcularCredito()">Calcular Simulador</button>
 
+  <p class="error-campo" id="error_tasaCredito" aria-live="polite"></p>
   <div id="resultadoCredito"></div>
 
   <button id="btnSolicitarCredito" onclick="solicitarCredito()" disabled>

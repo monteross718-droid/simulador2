@@ -167,9 +167,14 @@ function buscarClienteCredito() {
     mostrarHTML("datosClienteCredito", `
         <h3>Datos del Cliente</h3>
         <p>Cédula: ${escaparHTML(clienteCredito.cedula)}</p>
+        <p class="error-campo" id="error_cliente_cedula" aria-live="polite"></p>
         <p>Nombre: ${escaparHTML(clienteCredito.nombre)} ${escaparHTML(clienteCredito.apellido)}</p>
+        <p class="error-campo" id="error_cliente_nombre" aria-live="polite"></p>
+        <p class="error-campo" id="error_cliente_apellido" aria-live="polite"></p>
         <p>Ingresos: $${clienteCredito.ingresos}</p>
+        <p class="error-campo" id="error_cliente_ingresos" aria-live="polite"></p>
         <p>Egresos: $${clienteCredito.egresos}</p>
+        <p class="error-campo" id="error_cliente_egresos" aria-live="polite"></p>
     `);
 }
 
@@ -203,34 +208,13 @@ function calcularCredito() {
     resultadoCredito.className = "";
     creditoAprobado = false;
 
-    if (clienteCredito === null) {
-        mostrarTexto("resultadoCredito", "Primero buscar un cliente.");
-        return;
-    }
+    // Reúne todos los errores antes de decidir si se puede calcular.
+    if (!validarSimulador()) return;
 
-    let monto = recuperarFloat("montoCredito");
-    let plazoAnios = recuperarFloat("plazoCredito");
-
-    if (!Number.isFinite(monto) || monto <= 0 ||
-        !Number.isFinite(plazoAnios) || plazoAnios <= 0) {
-        mostrarTexto(
-            "resultadoCredito",
-            "Ingresar un monto y un plazo mayores que cero. Plazo en años."
-        );
-        return;
-    }
-
+    let monto = Number(recuperaraTexto("montoCredito"));
+    let plazoAnios = Number(recuperaraTexto("plazoCredito"));
     let ingresos = Number(clienteCredito.ingresos);
     let egresos = Number(clienteCredito.egresos);
-
-    if (!Number.isFinite(ingresos) || ingresos < 0 ||
-        !Number.isFinite(egresos) || egresos < 0) {
-        mostrarTexto(
-            "resultadoCredito",
-            "Revisar los ingresos y egresos del cliente."
-        );
-        return;
-    }
 
     let disponible = calcularDisponible(ingresos, egresos);
     let capacidadPago = calcularCapacidadPago(disponible);
@@ -345,3 +329,86 @@ document.getElementById("buscarCedulaCredito").addEventListener("input", functio
     mostrarTexto("datosClienteCredito", "Busque el cliente para continuar.");
 });
 pintarCreditos(creditos);
+
+// Reglas del ejercicio, ajustables según el producto de crédito.
+const REGLAS_SIMULADOR = { montoMin: 0.01, montoMax: 100000, plazoMin: 1,
+    plazoMax: 30, dineroMax: 1000000, tasaMin: 10, tasaMax: 20 };
+
+function errorSimulador(campo, mensaje) {
+    const salida = document.getElementById("error_" + campo);
+    if (salida) salida.innerText = mensaje;
+    const entrada = document.getElementById(campo);
+    if (entrada && entrada.tagName === "INPUT") {
+        entrada.setAttribute("aria-invalid", mensaje ? "true" : "false");
+        entrada.setAttribute("aria-describedby", "error_" + campo);
+    }
+}
+
+function validarSimulador() {
+    const errores = {};
+    const campos = ["buscarCedulaCredito", "montoCredito", "plazoCredito", "tasaCredito",
+        "cliente_cedula", "cliente_nombre", "cliente_apellido", "cliente_ingresos", "cliente_egresos"];
+    campos.forEach(campo => errorSimulador(campo, ""));
+    mostrarTexto("resultadoCredito", "");
+
+    const cedula = recuperaraTexto("buscarCedulaCredito").trim();
+    if (!cedula) errores.buscarCedulaCredito = "Ingrese la cédula del cliente.";
+    else if (!/^\d{10}$/.test(cedula))
+        errores.buscarCedulaCredito = "La cédula debe contener exactamente 10 dígitos.";
+    else if (!clienteCredito || clienteCredito.cedula !== cedula)
+        errores.buscarCedulaCredito = "Busque un cliente registrado con esta cédula antes de calcular.";
+
+    // Lee el texto completo: evita aceptar parcialmente valores como 12abc.
+    function validarNumero(id, min, max, entero) {
+        const entrada = document.getElementById(id);
+        const texto = entrada.value.trim();
+        const numero = Number(texto);
+        if (entrada.validity.badInput) errores[id] = "Ingrese un número válido.";
+        else if (!texto) errores[id] = "Este campo es obligatorio.";
+        else if (!Number.isFinite(numero)) errores[id] = "Ingrese un número válido y finito.";
+        else if (numero < min || numero > max)
+            errores[id] = "Ingrese un valor entre " + min + " y " + max + ".";
+        else if (entero && !Number.isInteger(numero)) errores[id] = "El plazo debe ser un número entero de años.";
+        else if (!entero && Math.abs(numero * 100 - Math.round(numero * 100)) > 0.000001)
+            errores[id] = "Use como máximo dos decimales.";
+        return numero;
+    }
+    validarNumero("montoCredito", REGLAS_SIMULADOR.montoMin, REGLAS_SIMULADOR.montoMax, false);
+    validarNumero("plazoCredito", REGLAS_SIMULADOR.plazoMin, REGLAS_SIMULADOR.plazoMax, true);
+    const tasaTexto = recuperaraTexto("tasaInteres").trim();
+    const tasa = Number(tasaTexto);
+    if (!tasaTexto || !Number.isFinite(tasa) || tasa < 10 || tasa > 20 ||
+        document.getElementById("tasaInteres").validity.badInput)
+        errores.tasaCredito = "En Parámetros, ingrese y guarde una tasa entre 10 % y 20 %.";
+    else if (tasa !== tasaInteres)
+        errores.tasaCredito = "Guarde la tasa modificada en Parámetros antes de calcular.";
+
+    if (clienteCredito && clienteCredito.cedula === cedula) {
+        const cliente = clienteCredito;
+        if (!/^\d{10}$/.test(cliente.cedula)) errores.cliente_cedula = "Corrija la cédula: debe tener 10 dígitos.";
+        for (const campo of ["nombre", "apellido"]) {
+            const texto = String(cliente[campo] ?? "").trim();
+            if (texto.length < 2 || texto.length > 80 || !/^[\p{L}\p{M}]+(?:[ '’-][\p{L}\p{M}]+)*$/u.test(texto))
+                errores["cliente_" + campo] = "Corrija " + campo + ": de 2 a 80 caracteres; use letras, espacios, apóstrofos o guiones.";
+        }
+        for (const campo of ["ingresos", "egresos"]) {
+            const valor = cliente[campo];
+            const numero = Number(valor);
+            if (valor === null || valor === undefined || String(valor).trim() === "" || !Number.isFinite(numero) ||
+                numero < (campo === "ingresos" ? 0.01 : 0) || numero > REGLAS_SIMULADOR.dineroMax ||
+                Math.abs(numero * 100 - Math.round(numero * 100)) > 0.000001)
+                errores["cliente_" + campo] = "Corrija " + campo + ": entre " + (campo === "ingresos" ? "0,01" : "0") + " y 1.000.000, con máximo dos decimales.";
+        }
+        // Egresos superiores a ingresos son posibles: la capacidad de pago será cero.
+    }
+    for (const campo of Object.keys(errores)) errorSimulador(campo, errores[campo]);
+    if (Object.keys(errores).length) {
+        mostrarTexto("resultadoCredito", "Revise los campos indicados. Los datos del cliente se corrigen en Clientes y luego se vuelve a buscar al cliente.");
+        const primero = document.querySelector('#creditos input[aria-invalid="true"]');
+        if (primero) primero.focus();
+        return false;
+    }
+    return true;
+}
+// Cambiar la tasa invalida la aprobación previa, sin ejecutar validaciones.
+document.getElementById("tasaInteres").addEventListener("input", invalidarCredito);

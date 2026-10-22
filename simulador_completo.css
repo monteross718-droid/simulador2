@@ -105,3 +105,14 @@
   
 button:disabled { opacity: .5; cursor: not-allowed; }
 section { overflow-x: auto; }
+
+/* Mensajes debajo de los campos; aparecen únicamente al calcular. */
+.error-campo { color: #a51c30; font-size: .9rem; margin: 3px 5px 12px; }
+.error-campo:empty { display: none; }
+[aria-invalid="true"] { border: 2px solid #a51c30; }
+input { box-sizing: border-box; max-width: 100%; }
+@media (max-width: 600px) {
+  section { margin: 12px 8px; padding: 16px; }
+  input { display: block; width: 100%; margin: 5px 0; }
+  nav button { flex: 1 1 40%; }
+}

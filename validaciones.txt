@@ -1,0 +1,16 @@
+PROMPT ENVIADO POR EL ESTUDIANTE
+
+Eres un desarrollador web con 10 años de experiencia, verifica validaciones para el formulario, tipos de datos, montos maximos y minimos y campos obligatorios, todas las validaciones deben implementarse una vez que se precione el botón Calcular Simulador, no modificar ID's
+
+REGLAS IMPLEMENTADAS PARA EL EJERCICIO
+- Validar al pulsar Calcular Simulador; mostrar todos los errores debajo del campo correspondiente.
+- Conservar todos los ID originales.
+- Cédula obligatoria: 10 dígitos, cliente registrado y buscado; validación de formato, no de dígito verificador.
+- Monto obligatorio: de $0,01 a $100.000, finito y máximo 2 decimales.
+- Plazo obligatorio: de 1 a 30 años enteros.
+- Tasa configurada y guardada: entre 10 % y 20 %.
+- Revisar nombre y apellido registrados: 2 a 80 caracteres, letras y separadores habituales.
+- Ingresos registrados: $0,01 a $1.000.000; egresos: $0 a $1.000.000, máximo 2 decimales.
+- Sin calcular ni permitir asignación si hay errores. Cambiar la solicitud invalida aprobaciones anteriores.
+- Se mantienen los controles previos de Guardar cliente y Guardar tasa para no alterar esos procesos.
+- Límites de práctica configurables; no representan políticas reales de una entidad financiera.
